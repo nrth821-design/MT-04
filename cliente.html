@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tulcán MotoExpress - Cliente</title>
+    <!-- Tailwind CSS para diseño rápido y limpio -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .progress-bar { transition: width 0.4s ease; }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans antialiased">
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="max-w-md mx-auto bg-white min-h-screen shadow-lg flex flex-col justify-between pb-6">
+        
+        <!-- PANTALLA 1: CLIENTE NUEVO -->
+        <div id="pantalla-nuevo" class="flex flex-col flex-grow">
+            <!-- Header -->
+            <div class="bg-yellow-500 text-white p-4 text-center font-bold text-xl shadow-md">
+                🛵 Tulcán MotoExpress
+            </div>
+
+            <!-- Mapa Simulado (Tulcán) -->
+            <div class="bg-blue-100 h-64 w-full relative flex items-center justify-center border-b border-gray-300">
+                <span class="text-gray-500 font-semibold text-center p-4">
+                    📍 [Mapa en vivo de Tulcán activo]<br>
+                    <span class="text-xs text-gray-400">Parque Ayora - Rumichaca - Terminal</span>
+                </span>
+                <!-- Pines ficticios -->
+                <div class="absolute top-1/3 left-1/4 text-red-600 text-2xl animate-bounce"><i class="fas fa-map-marker-alt"></i></div>
+                <div class="absolute bottom-1/3 right-1/4 text-blue-600 text-2xl"><i class="fas fa-flag-checkered"></i></div>
+            </div>
+
+            <!-- Formulario de Ruta -->
+            <div class="p-4 space-y-3 flex-grow">
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase">Origen</label>
+                    <input type="text" placeholder="¿Dónde te recogemos en Tulcán?" class="w-full p-3 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-400">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase">Destino</label>
+                    <input type="text" placeholder="¿A dónde vas?" class="w-full p-3 border rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-yellow-400">
+                </div>
+
+                <div class="bg-yellow-50 border-l-4 border-yellow-500 p-3 rounded text-sm text-yellow-800 font-medium">
+                    ℹ️ El administrador recibirá tu ruta y te enviará el precio al instante.
+                </div>
+            </div>
+
+            <!-- Botón de Acción -->
+            <div class="p-4">
+                <button onclick="solicitarPedido()" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-4 rounded-xl shadow-lg text-lg transition uppercase tracking-wider">
+                    Solicitar Pedido
+                </button>
+            </div>
+        </div>
+
+        <!-- PANTALLA PROCESANDO / PRECIO (ESTADO INTERMEDIO) -->
+        <div id="pantalla-espera" class="hidden flex-col items-center justify-center flex-grow p-6 text-center">
+            <div id="loading-icon" class="text-yellow-500 text-6xl animate-spin mb-4">
+                <i class="fas fa-circle-notch"></i>
+            </div>
+            <h2 id="espera-titulo" class="text-xl font-bold text-gray-800">Esperando precio del administrador...</h2>
+            <p class="text-gray-500 text-sm mt-2">Estamos cotizando tu carrera en tiempo real.</p>
+            
+            <!-- Cuadro de Precio Oculto al inicio -->
+            <div id="box-precio" class="hidden mt-6 bg-green-50 border-2 border-green-500 p-6 rounded-2xl w-full">
+                <span class="text-gray-600 block text-sm uppercase font-bold tracking-wider">Precio Asignado</span>
+                <span class="text-5xl font-black text-green-600 block my-2">$3.50</span>
+                <div class="flex space-x-3 mt-4">
+                    <button onclick="aceptarPrecio()" class="flex-1 bg-green-500 text-white font-bold py-3 rounded-xl shadow">Aceptar</button>
+                    <button onclick="reiniciar()" class="flex-1 bg-red-500 text-white font-bold py-3 rounded-xl shadow">Rechazar</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PANTALLA EN CAMINO & CÓDIGO DE SEGURIDAD -->
+        <div id="pantalla-codigo" class="hidden flex-col items-center justify-center flex-grow p-6 text-center bg-gray-900 text-white">
+            <i class="fas fa-motorcycle text-yellow-400 text-6xl mb-4 animate-pulse"></i>
+            <h2 class="text-2xl font-black">¡Tu moto va en camino!</h2>
+            <p class="text-gray-400 text-sm mt-1">Dale este código al conductor cuando llegue:</p>
+            
+            <div class="bg-gray-800 border-2 border-dashed border-yellow-400 text-yellow-400 text-5xl font-mono font-black py-4 px-8 my-6 rounded-xl tracking-widest">
+                8472
+            </div>
+            
+            <p class="text-xs text-gray-500">Código de seguridad único para confirmar recogida/entrega.</p>
+            <button onclick="cambiarAFrecuente()" class="mt-8 text-sm text-yellow-400 underline">Simular Cliente Frecuente (Siguiente paso)</button>
+        </div>
+
+
+        <!-- PANTALLA 2: CLIENTE FRECUENTE -->
+        <div id="pantalla-frecuente" class="hidden flex-col flex-grow">
+            <!-- Header Frecuente -->
+            <div class="bg-gray-800 text-white p-4 flex justify-between items-center shadow-md">
+                <span class="font-bold">👋 ¡Hola de nuevo!</span>
+                <button onclick="toggleMenu()" class="text-yellow-400 text-xl"><i class="fas fa-bars"></i></button>
+            </div>
+
+            <!-- SECCIÓN DE FIDELIZACIÓN (BARRAS DE SELLOS) -->
+            <div class="p-4 bg-white border-b space-y-3 shadow-sm">
+                <div>
+                    <div class="flex justify-between text-xs font-bold text-gray-600 mb-1">
+                        <span>🎁 PROMO 50% (Pedido #7)</span>
+                        <span class="text-yellow-600">5 / 7 Sellos</span>
+                    </div>
+                    <div class="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
+                        <div class="bg-yellow-500 h-full progress-bar" style="width: 71%"></div>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between text-xs font-bold text-gray-600 mb-1">
+                        <span>🔥 VIAJE GRATIS (Pedido #10)</span>
+                        <span class="text-green-600">8 / 10 Sellos</span>
+                    </div>
+                    <div class="w-full bg-gray-200 h-3 rounded-full overflow-hidden">
+                        <div class="bg-green-500 h-full progress-bar" style="width: 80%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mapa Frecuente -->
+            <div class="bg-blue-50 h-48 w-full relative flex items-center justify-center">
+                <span class="text-gray-400 text-xs">Mapa rápido - Tulcán</span>
+                <div class="absolute top-1/2 left-1/2 text-yellow-500 text-xl"><i class="fas fa-motorcycle"></i></div>
+            </div>
+
+            <!-- Botones de Acción Frecuente -->
+            <div class="p-4 grid grid-cols-2 gap-4 flex-grow content-center">
+                <button onclick="alert('Solicitando MotoExpress...')" class="bg-yellow-500 hover:bg-yellow-600 text-white p-6 rounded-2xl shadow-md flex flex-col items-center justify-center space-y-2 font-bold text-lg">
+                    <i class="fas fa-motorcycle text-3xl"></i>
+                    <span>Pedir Moto</span>
+                </button>
+                <button onclick="alert('Solicitando Delivery...')" class="bg-gray-800 hover:bg-gray-900 text-white p-6 rounded-2xl shadow-md flex flex-col items-center justify-center space-y-2 font-bold text-lg">
+                    <i class="fas fa-box text-3xl text-yellow-400"></i>
+                    <span>Pedir Delivery</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- MENÚ DESPLEGABLE (INVITA Y PERFIL) -->
+        <div id="menu-lateral" class="hidden fixed inset-0 bg-black/50 z-50 flex justify-end">
+            <div class="bg-white w-4/5 max-w-sm h-full p-6 flex flex-col justify-between">
+                <div class="space-y-6">
+                    <div class="flex justify-between items-center border-b pb-3">
+                        <h3 class="font-bold text-lg text-gray-800">Menú</h3>
+                        <button onclick="toggleMenu()" class="text-gray-500 text-xl"><i class="fas fa-times"></i></button>
+                    </div>
+
+                    <!-- Invita y Gana -->
+                    <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-xl text-center">
+                        <h4 class="font-bold text-yellow-800 text-sm mb-1">🎁 ¡Invita y Gana viajes gratis!</h4>
+                        <p class="text-xs text-gray-600 mb-2">3 invitados = 1 gratis | 5 invitados = 2 gratis</p>
+                        <div class="bg-white border-2 border-dashed border-yellow-400 py-2 rounded text-lg font-mono font-bold text-gray-700">
+                            ANA-83K2
+                        </div>
+                    </div>
+
+                    <!-- Perfil Cédula Opcional -->
+                    <div class="space-y-2">
+                        <h4 class="font-bold text-gray-700 text-sm"><i class="fas fa-user-circle mr-1"></i> Tu Perfil</h4>
+                        <label class="block text-xs text-gray-500">Si quieres beneficios por tu cumpleaños ingresa tu cédula solo si tú deseas (Opcional)</label>
+                        <input type="number" placeholder="Cédula (Opcional)" class="w-full p-2 border rounded-lg text-sm">
+                    </div>
+                </div>
+                
+                <button onclick="reiniciar(); toggleMenu();" class="w-full bg-gray-200 text-gray-700 py-2 rounded-lg font-medium text-sm">Cerrar Sesión / Simular Inicio</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- LÓGICA DE CONTROL DEL PROTOTIPO -->
+    <script>
+        function solicitarPedido() {
+            document.getElementById('pantalla-nuevo').classList.add('hidden');
+            document.getElementById('pantalla-espera').classList.remove('hidden');
+            
+            // Simulación: El Admin te envía el precio a los 3 segundos
+            setTimeout(() => {
+                document.getElementById('loading-icon').classList.add('hidden');
+                document.getElementById('espera-titulo').innerText = "¡Precio Recibido!";
+                document.getElementById('box-precio').classList.remove('hidden');
+            }, 3000);
+        }
+
+        function aceptarPrecio() {
+            document.getElementById('pantalla-espera').classList.add('hidden');
+            document.getElementById('pantalla-codigo').classList.remove('hidden');
+        }
+
+        function cambiarAFrecuente() {
+            document.getElementById('pantalla-codigo').classList.add('hidden');
+            document.getElementById('pantalla-frecuente').classList.remove('hidden');
+        }
+
+        function toggleMenu() {
+            const menu = document.getElementById('menu-lateral');
+            menu.classList.toggle('hidden');
+        }
+
+        function reiniciar() {
+            document.getElementById('pantalla-nuevo').classList.remove('hidden');
+            document.getElementById('pantalla-espera').classList.add('hidden');
+            document.getElementById('pantalla-codigo').classList.add('hidden');
+            document.getElementById('pantalla-frecuente').classList.add('hidden');
+            document.getElementById('box-precio').classList.add('hidden');
+            document.getElementById('loading-icon').classList.remove('hidden');
+            document.getElementById('espera-titulo').innerText = "Esperando precio del administrador...";
+        }
+    </script>
+</body>
+</html>

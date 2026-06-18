@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Motorizado - Tulcán MotoExpress</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-black text-white font-sans">
+
+    <!-- PANTALLA DE LOGIN (INICIAL) -->
+    <div id="pantalla-login" class="flex flex-col items-center justify-center min-h-screen p-6">
+        <div class="text-yellow-500 text-6xl mb-6"><i class="fas fa-motorcycle"></i></div>
+        <h1 class="text-2xl font-black mb-6">Acceso Motorizado</h1>
+        <input type="text" id="input-codigo" placeholder="Ingresa tu código (Ej: K9P2-M4X7)" class="w-full bg-gray-900 border border-gray-700 p-4 rounded-xl text-center font-mono text-yellow-400 mb-4">
+        <button onclick="intentarLogin()" class="w-full bg-yellow-500 text-black font-black py-4 rounded-xl">CONECTARSE</button>
+    </div>
+
+    <!-- PANTALLA PRINCIPAL (TRABAJO) -->
+    <div id="pantalla-trabajo" class="hidden flex flex-col min-h-screen">
+        <div class="bg-gray-900 p-4 flex justify-between items-center border-b border-gray-800">
+            <span class="font-bold text-green-400"><i class="fas fa-circle text-[10px] mr-1 animate-pulse"></i> CONECTADO</span>
+            <button onclick="desconectar()" class="text-xs bg-red-900/50 text-red-400 px-3 py-1 rounded">Salir</button>
+        </div>
+
+        <div class="flex-grow p-6 flex flex-col justify-center items-center">
+            <div class="text-gray-600 text-center">
+                <i class="fas fa-search text-4xl mb-4"></i>
+                <p>Esperando nuevos pedidos en Tulcán...</p>
+            </div>
+        </div>
+        
+        <div class="bg-gray-900 p-4 text-center text-gray-500 text-xs">
+            Ganancia del día: <span class="text-white font-bold">$12.50</span>
+        </div>
+    </div>
+
+    <!-- MODAL DE PEDIDO (ALERTA PANTALLA COMPLETA) -->
+    <div id="alerta-pedido" class="hidden fixed inset-0 bg-red-600 z-50 p-6 flex flex-col justify-center animate-pulse">
+        <h2 class="text-white text-3xl font-black mb-4">¡NUEVO PEDIDO!</h2>
+        <div class="bg-white text-black p-6 rounded-2xl shadow-2xl mb-6">
+            <p class="text-4xl font-black text-center mb-4">$3.50</p>
+            <div class="space-y-3">
+                <p class="font-bold"><i class="fas fa-map-marker-alt text-red-500 mr-2"></i> Terminal de Tulcán</p>
+                <p class="font-bold"><i class="fas fa-flag-checkered text-blue-500 mr-2"></i> Mall de la Ciudad</p>
+                <p class="text-sm text-gray-600 italic">2.3 km de distancia</p>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <button onclick="aceptarPedido()" class="bg-green-500 text-white font-black py-5 rounded-xl">ACEPTAR</button>
+            <button onclick="ocultarAlerta()" class="bg-black text-white font-black py-5 rounded-xl">RECHAZAR</button>
+        </div>
+    </div>
+
+    <!-- SCRIPT DE CONTROL -->
+    <script>
+        function intentarLogin() {
+            document.getElementById('pantalla-login').classList.add('hidden');
+            document.getElementById('pantalla-trabajo').classList.remove('hidden');
+            // Simulación: Pedido llega a los 5 segundos de conectarse
+            setTimeout(() => {
+                document.getElementById('alerta-pedido').classList.remove('hidden');
+            }, 5000);
+        }
+
+        function aceptarPedido() {
+            document.getElementById('alerta-pedido').classList.add('hidden');
+            alert("Carrera aceptada. ¡Ve al punto de recogida!");
+        }
+
+        function ocultarAlerta() {
+            document.getElementById('alerta-pedido').classList.add('hidden');
+        }
+
+        function desconectar() {
+            location.reload();
+        }
+    </script>
+</body>
+</html>
